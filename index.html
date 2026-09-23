@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon.svg" />
   <link rel="icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
   <div class="app">
@@ -27,9 +27,9 @@
         <label class="k">Import</label>
         <div class="drop" id="drop">
           <strong>Drop PDF, OnSong, ChordPro, or UG text</strong>
-          <span>.pdf · .onsong · .cho · .chopro · .crd · .pro · .txt</span>
+          <span>Share from OnSong as OnSong / ChordPro / Text — not Archive</span>
         </div>
-        <input id="file" type="file" hidden accept=".pdf,.onsong,.cho,.chopro,.crd,.pro,.txt,.chordpro,text/plain,application/pdf" />
+        <input id="file" type="file" hidden accept="*/*" />
       </div>
       <div>
         <label class="k">Chart source</label>
@@ -87,12 +87,12 @@
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }</script>
-  <script src="harmony.js?v=5"></script>
-  <script src="parser.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="harmony.js?v=6"></script>
+  <script src="parser.js?v=6"></script>
+  <script src="app.js?v=6"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js?v=5");
+      navigator.serviceWorker.register("./sw.js?v=6");
     }
   </script>
 </body>
