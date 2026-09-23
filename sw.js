@@ -1,4 +1,4 @@
-const CACHE = "chart-color-v1";
+const CACHE = "chart-color-v2";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -7,7 +7,8 @@ const PRECACHE = [
   "./harmony.js",
   "./parser.js",
   "./manifest.json",
-  "./icon.svg"
+  "./icon.svg",
+  "./extension.html"
 ];
 
 self.addEventListener("install", (event) => {

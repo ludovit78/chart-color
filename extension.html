@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chart Color helper</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .help { max-width: 42rem; margin: 2rem auto; padding: 0 1rem 3rem; color: #efe6d6; }
+    .help a { color: #e0b36a; }
+    .marklet { display: inline-block; margin: 12px 0; padding: 10px 14px; border: 1px solid #c47a2c; border-radius: 999px; color: #1a1410; background: #c47a2c; text-decoration: none; font-weight: 700; }
+    ol { line-height: 1.55; }
+  </style>
+</head>
+<body>
+  <div class="help">
+    <h1>Send a site chart into Chart Color</h1>
+    <p>Open a chords page, run the helper, Chart Color opens with that song.</p>
+
+    <h2>iPhone / Safari</h2>
+    <ol>
+      <li>Hold this button and add it to Favourites / Bookmarks:</li>
+    </ol>
+    <p>
+      <a class="marklet" href="javascript:(function(){function deep(o,ks){if(!o||typeof o!=='object')return null;for(const k of ks){if(typeof o[k]==='string'&&o[k].trim())return o[k];}for(const v of Object.values(o)){const h=deep(v,ks);if(h)return h;}return null;}function ug(){const el=document.querySelector('.js-store,[data-content]');if(!el)return null;const raw=el.getAttribute('data-content');if(!raw)return null;try{const d=JSON.parse(raw);const t=deep(d,['song_name','title']);const a=deep(d,['artist_name','artist']);const k=deep(d,['tonality_name','key']);let c=deep(d,['content','text']);if(!c)return null;c=c.replace(/\[\/?(tab|ch)\]/g,'');return [t,a,k?'Key: '+k:''].filter(Boolean).join('\n')+'\n\n'+c;}catch(e){return null;}}function vis(){const nodes=document.querySelectorAll('pre,[class*=tablature],[class*=js-tab-content],[class*=chord-sheet],[class*=cifra]');let best='';nodes.forEach(n=>{const t=(n.innerText||'').trim();if(t.length>best.length)best=t;});const title=(document.querySelector('h1')||{}).innerText||document.title;const sel=window.getSelection&&String(window.getSelection());const body=best||(sel||'').trim();if(!body)return null;return title+'\n\n'+body;}const text=ug()||vis();if(!text){alert('No chord chart found.');return;}location.href='https://ludovit78.github.io/chart-color/#import='+encodeURIComponent(text);})()">Send to Chart Color</a>
+    </p>
+    <ol start="2">
+      <li>Open Ultimate Guitar (or another chords page).</li>
+      <li>Tap the bookmark. Chart Color should open with the song loaded.</li>
+    </ol>
+
+    <h2>Laptop (Chrome / Edge / Brave)</h2>
+    <ol>
+      <li>Download the <a href="https://github.com/ludovit78/chart-color/tree/main/extension">extension folder</a>.</li>
+      <li>Go to <code>chrome://extensions</code> → Developer mode → Load unpacked → choose that folder.</li>
+      <li>On a chords page, click the Chart Color toolbar button.</li>
+    </ol>
+    <p><a href="./">Back to the app</a></p>
+  </div>
+</body>
+</html>

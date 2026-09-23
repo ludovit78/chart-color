@@ -4,12 +4,7 @@
   "version": "1.0.0",
   "description": "Send the open chord chart to Chart Color.",
   "action": {
-    "default_title": "Send to Chart Color",
-    "default_icon": {
-      "16": "icon.png",
-      "48": "icon.png",
-      "128": "icon.png"
-    }
+    "default_title": "Send to Chart Color"
   },
   "permissions": ["activeTab", "scripting"],
   "host_permissions": [
