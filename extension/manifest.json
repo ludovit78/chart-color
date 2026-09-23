@@ -1,21 +1,36 @@
 {
   "manifest_version": 3,
   "name": "Chart Color",
-  "version": "1.0.0",
-  "description": "Send the open chord chart to Chart Color.",
-  "action": {
-    "default_title": "Send to Chart Color"
-  },
-  "permissions": ["activeTab", "scripting"],
+  "version": "1.1.0",
+  "description": "Send Ultimate Guitar and other chord pages into Chart Color.",
+  "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": [
-    "https://tabs.ultimate-guitar.com/*",
-    "https://www.ultimate-guitar.com/*",
-    "https://ultimate-guitar.com/*",
-    "https://www.e-chords.com/*",
-    "https://www.cifraclub.com.br/*",
+    "*://*.ultimate-guitar.com/*",
+    "*://tabs.ultimate-guitar.com/*",
+    "*://www.e-chords.com/*",
+    "*://*.e-chords.com/*",
+    "*://*.cifraclub.com.br/*",
     "https://ludovit78.github.io/*"
   ],
-  "background": {
-    "service_worker": "background.js"
-  }
+  "action": {
+    "default_title": "Send this chart to Chart Color"
+  },
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.ultimate-guitar.com/*",
+        "*://tabs.ultimate-guitar.com/*",
+        "*://*.e-chords.com/*",
+        "*://*.cifraclub.com.br/*"
+      ],
+      "js": ["extract.js", "content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://ludovit78.github.io/chart-color/*"],
+      "js": ["receiver.js"],
+      "run_at": "document_idle"
+    }
+  ]
 }

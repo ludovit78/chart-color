@@ -1,53 +1,63 @@
-function findDeep(obj, keys) {
+function chartColorDeep(obj, keys) {
   if (!obj || typeof obj !== "object") return null;
-  for (const k of keys) if (typeof obj[k] === "string" && obj[k].trim()) return obj[k];
+  for (const k of keys) {
+    if (typeof obj[k] === "string" && obj[k].trim().length > 8) return obj[k];
+  }
+  if (Array.isArray(obj)) {
+    for (const v of obj) {
+      const hit = chartColorDeep(v, keys);
+      if (hit) return hit;
+    }
+    return null;
+  }
   for (const v of Object.values(obj)) {
-    const hit = findDeep(v, keys);
+    const hit = chartColorDeep(v, keys);
     if (hit) return hit;
   }
   return null;
 }
-
-function fromUgStore() {
+function chartColorCleanUg(text) {
+  return String(text || "")
+    .replace(/\[\/?(tab)\]/gi, "")
+    .replace(/\[ch\]/gi, "")
+    .replace(/\[\/ch\]/gi, "")
+    .replace(/\r\n/g, "\n")
+    .trim();
+}
+function chartColorFromStore() {
   const el = document.querySelector(".js-store, [data-content]");
   if (!el) return null;
-  const raw = el.getAttribute("data-content") || el.dataset.content;
+  const raw = el.getAttribute("data-content");
   if (!raw) return null;
   try {
     const data = JSON.parse(raw);
-    const title = findDeep(data, ["song_name", "songName", "title"]);
-    const artist = findDeep(data, ["artist_name", "artistName", "artist"]);
-    const key = findDeep(data, ["tonality_name", "tonality", "key"]);
-    let content = findDeep(data, ["content", "wiki_tab", "text"]);
-    if (content && content.includes("[tab]")) {
-      content = content.replace(/\[\/?(tab|ch)\]/g, "");
-    }
+    const title = chartColorDeep(data, ["song_name", "songName", "title"]) || "";
+    const artist = chartColorDeep(data, ["artist_name", "artistName", "artist"]) || "";
+    const key = chartColorDeep(data, ["tonality_name", "tonality", "key"]) || "";
+    const content = chartColorCleanUg(
+      chartColorDeep(data, ["content", "wiki_tab", "text"]) || ""
+    );
     if (!content) return null;
-    const head = [title, artist, key ? "Key: " + key : ""].filter(Boolean).join("\n");
-    return (head ? head + "\n\n" : "") + content.replace(/\r\n/g, "\n").trim();
+    return [title, artist, key ? "Key: " + key : ""].filter(Boolean).join("\n") + "\n\n" + content;
   } catch (e) {
     return null;
   }
 }
-
-function fromVisibleSheet() {
-  const nodes = document.querySelectorAll(
-    "pre, [class*='tablature'], [class*='js-tab-content'], [class*='chord-sheet'], [class*='cifra']"
+function chartColorFromDom() {
+  const picks = document.querySelectorAll(
+    "pre, code, [class*='tablature'], [class*='js-tab-content'], [class*='tab-content'], [class*='chord-sheet'], [class*='cifra_cnt'], [class*='cifra']"
   );
   let best = "";
-  nodes.forEach((n) => {
+  picks.forEach((n) => {
     const t = (n.innerText || "").trim();
     if (t.length > best.length) best = t;
   });
-  const title =
-    document.querySelector("h1")?.innerText?.trim() ||
-    document.title.replace(/\s*[|\-].*$/, "");
-  if (!best) best = window.getSelection()?.toString()?.trim() || "";
+  const sel = (window.getSelection && String(window.getSelection()).trim()) || "";
+  if (sel.length > best.length) best = sel;
   if (!best) return null;
-  return title + "\n\n" + best;
+  const title = (document.querySelector("h1") || {}).innerText || document.title;
+  return String(title).trim() + "\n\n" + best;
 }
-
-(() => {
-  const text = fromUgStore() || fromVisibleSheet();
-  return text && text.trim() ? text.trim() : "";
-})();
+function chartColorExtract() {
+  return (chartColorFromStore() || chartColorFromDom() || "").trim();
+}

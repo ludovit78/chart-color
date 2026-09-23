@@ -1,28 +1,40 @@
-const APP = "https://ludovit78.github.io/chart-color/";
+const APP = "https://ludovit78.github.io/chart-color/?from=ext=1";
 
-async function grab(tabId) {
-  const [{ result }] = await chrome.scripting.executeScript({
-    target: { tabId },
-    files: ["extract.js"]
+function openWith(text) {
+  chrome.storage.local.set({ pendingChart: text }, function () {
+    chrome.tabs.create({ url: APP });
   });
-  return result || "";
 }
 
-chrome.action.onClicked.addListener(async (tab) => {
-  if (!tab?.id) return;
-  let text = "";
+chrome.runtime.onMessage.addListener(function (msg, _sender, sendResponse) {
+  if (msg && msg.type === "chart-color-send" && msg.text) {
+    openWith(msg.text);
+    if (sendResponse) sendResponse({ ok: true });
+  }
+  return true;
+});
+
+chrome.action.onClicked.addListener(async function (tab) {
+  if (!tab || !tab.id) return;
   try {
-    text = await grab(tab.id);
-  } catch (e) {
-    text = "";
-  }
-  if (!text.trim()) {
-    chrome.scripting.executeScript({
+    const [{ result }] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: () => alert("No chord chart found on this page. Open a chords tab, then try again.")
+      func: function () {
+        if (typeof chartColorExtract === "function") return chartColorExtract();
+        const sel = window.getSelection ? String(window.getSelection()) : "";
+        const pre = document.querySelector("pre");
+        return (sel || (pre && pre.innerText) || document.body.innerText || "").trim();
+      }
     });
-    return;
+    if (!result) {
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: function () { alert("No chord chart found."); }
+      });
+      return;
+    }
+    openWith(result);
+  } catch (e) {
+    chrome.tabs.create({ url: APP });
   }
-  const url = APP + "#import=" + encodeURIComponent(text);
-  chrome.tabs.create({ url });
 });
