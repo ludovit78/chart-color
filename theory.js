@@ -14,96 +14,150 @@ const DEG={"I":0,"II":2,"III":4,"IV":5,"V":7,"VI":9,"VII":11,"bII":1,"bIII":3,"b
 function parseDegreeToken(tok){
   const m=String(tok).trim().match(/^(b|#)?(I{1,3}|IV|VI{0,2}|VII)(maj9|maj7|m11|m9|m7|sus4|7sus4|13|9|7|m)?$/i);
   if(!m)return null;
-  const roman=(m[1]||"")+m[2].toUpperCase();
-  const q=m[3]||"";
-  return {roman,q};
+  return {roman:(m[1]||"")+m[2].toUpperCase(),q:m[3]||""};
 }
 function degreeToChord(token,keyRoot,flats){
-  const p=parseDegreeToken(token);
-  if(!p)return token;
-  const off=DEG[p.roman];
-  if(off===undefined)return token;
-  const root=pitchName(noteIndex(keyRoot)+off,flats);
-  return root+(p.q||"");
+  const p=parseDegreeToken(token);if(!p)return token;
+  const off=DEG[p.roman];if(off===undefined)return token;
+  return pitchName(noteIndex(keyRoot)+off,flats)+(p.q||"");
 }
 function formInKey(formId,keyRoot){
   const form=THEORY_FORMS[formId]||THEORY_FORMS["ii-v-i"];
   const flats=preferFlatsForKey(keyRoot,false);
-  return {
-    name:form.name,
-    key:keyRoot,
-    chords:form.bars.map(t=>degreeToChord(t,keyRoot,flats))
-  };
+  return {name:form.name,key:keyRoot,chords:form.bars.map(t=>degreeToChord(t,keyRoot,flats))};
 }
 function progressionToOnSong(title,key,chords,explain){
-  const lines=[title,"Theory Bot", "Key: "+key,"", "Form:"];
-  for(let i=0;i<chords.length;i+=4){
-    lines.push(chords.slice(i,i+4).join("   "));
-  }
+  const lines=[title,"Theory Bot","Key: "+key,"","Form:"];
+  for(let i=0;i<chords.length;i+=4)lines.push(chords.slice(i,i+4).join("   "));
   lines.push("",explain||"");
   return lines.join("\n");
 }
-function detectKeyFromText(s){
-  const m=String(s).match(/\b(?:in|key)\s+([A-G][#b]?)\b/i);
-  if(m)return m[1].charAt(0).toUpperCase()+m[1].slice(1);
-  return null;
+function parseTargetKey(s){
+  const t=String(s||"");
+  let m=t.match(/\b(?:in|to|key)\s+([A-G])([#b♯♭])?\s*(m|min|minor|maj|major)?\b/i);
+  if(!m)m=t.match(/\b([A-G])([#b♯♭])(m)\b/i);
+  if(!m)return null;
+  const acc=(m[2]||"").replace("♯","#").replace("♭","b");
+  const root=m[1].toUpperCase()+acc;
+  const qual=(m[3]||"").toLowerCase();
+  const minor=qual==="m"||qual==="min"||qual==="minor";
+  return {root,minor,label:root+(minor?"m":"")};
 }
 function detectForm(s){
   const t=s.toLowerCase();
-  if(/blues|12/.test(t))return "blues";
-  if(/rhythm|i got rhythm/.test(t))return "rhythm";
-  if(/bossa|jobim|samba/.test(t))return "bossa";
-  if(/gospel|walk/.test(t))return "gospel";
-  if(/neo|soul/.test(t))return "neosoul";
-  if(/pop|axis/.test(t))return "pop";
+  if(/this song|this chart|imported|give me this|make this|put this/.test(t))return null;
+  if(/12[- ]bar|blues/.test(t)&&!/style/.test(t))return "blues";
+  if(/rhythm changes/.test(t))return "rhythm";
   if(/andalus|phryg/.test(t))return "andalusian";
-  if(/circle|fifths/.test(t))return "circle";
-  if(/turnaround|i[- ]vi/.test(t))return "turnaround";
-  if(/ii|2-5-1|two five/.test(t))return "ii-v-i";
+  if(/circle of fifth/.test(t))return "circle";
+  if(/turnaround/.test(t)&&!/this/.test(t))return "turnaround";
+  if(/\bii-?v-?i\b|2-5-1|two five one/.test(t)&&!/this/.test(t))return "ii-v-i";
   return null;
 }
 function detectStyleHint(s){
   const t=s.toLowerCase();
   if(/bossa/.test(t))return "bossa";
-  if(/jazz|smooth/.test(t))return "smooth-jazz";
+  if(/light jazz|smooth jazz|jazz/.test(t))return "smooth-jazz";
   if(/gospel/.test(t))return "gospel";
   if(/neo|soul/.test(t))return "neo-soul";
+  if(/ballad|pop/.test(t))return "pop-ballad";
   if(/funk/.test(t))return "funk";
   if(/blues/.test(t))return "blues";
   if(/latin|samba/.test(t))return "latin";
+  if(/r\&?b|r and b/.test(t))return "rnb";
   if(/worship/.test(t))return "worship";
   if(/country/.test(t))return "country";
   return null;
 }
+function detectDensityHint(s){
+  const t=s.toLowerCase();
+  if(/paint only|just color|no extra/.test(t))return 0;
+  if(/light/.test(t))return 1;
+  if(/full|heavy|lots/.test(t))return 3;
+  if(/medium/.test(t))return 2;
+  return null;
+}
+function wantsCurrentChart(s){
+  const t=s.toLowerCase();
+  return /this song|this chart|the song|imported|give me this|make this|put this|transpose|restyle|in .+ style/.test(t);
+}
+function shiftName(name,semi,flats){return pitchName(noteIndex(name)+semi,flats);}
+function transposeParsedSong(song,fromKey,toKey){
+  const from=fromKey&&fromKey.root?fromKey:guessKey(collectChords(song),song.meta&&song.meta.key);
+  const to=toKey;
+  const semi=(noteIndex(to.root)-noteIndex(from.root)+12)%12;
+  const flats=preferFlatsForKey(to.root,!!to.minor);
+  const label=to.label||(to.root+(to.minor?"m":""));
+  return {
+    meta:{...song.meta,key:label},
+    sections:(song.sections||[]).map(sec=>({
+      name:sec.name,
+      lines:(sec.lines||[]).map(line=>({
+        type:line.type,
+        parts:(line.parts||[]).map(p=>{
+          if(!p.chord)return {...p};
+          const c=parseChord(p.chord);
+          if(!c||!c.root)return {...p};
+          const moved={...c,root:shiftName(c.root,semi,flats),bass:c.bass?shiftName(c.bass,semi,flats):null};
+          return {...p,chord:formatChord(moved,flats)};
+        })
+      }))
+    })),
+    source:song.source
+  };
+}
 const WHY={
-  "ii-v-i":"Classic cadence. ii sets subdominant color, V wants to resolve, I lands. Add 9/13 on V in jazz; keep it diatonic in pop.",
-  "turnaround":"Gets you home without sitting on I. VI7 is an applied dominant to ii. Piano: walk 3rds or 7ths down.",
-  "rhythm":"A-section of rhythm changes. Secondary dominants every two bars. Keep the 1–6–2–5 grid under substitutions.",
-  "bossa":"I stays open (maj7/maj9), then a soft ii–V. Do not rush the V. Left hand: root–5, right hand: 3–7–9.",
-  "blues":"Dominant I, IV and V. Treat I7 as home, not as a problem to resolve. #9 on V is piano language.",
-  "gospel":"I7 into IV is the handshake. Passing dim or walk-up 1–2–3–4 into IV. Resolve IV back through ii–V or a walk-down.",
-  "neosoul":"Maj9 and m11 want space. 7sus4 delays the third. Do not fill every beat.",
-  "pop":"I–V–vi–IV. Melody sits on chord tones 1 and 5. Color with add9, not 13s.",
-  "andalusian":"Minor descent. V7 at the bottom is the only real dominant. Hold the bass motion.",
-  "circle":"Each chord is V of the next. Good for bridges and modulating up a fourth."
+  "ii-v-i":"Classic cadence. ii sets subdominant color, V wants to resolve, I lands.",
+  "turnaround":"VI7 is an applied dominant to ii. Walk 3rds or 7ths down.",
+  "rhythm":"A-section of rhythm changes. Keep the 1–6–2–5 grid.",
+  "bossa":"I stays open, then a soft ii–V. Do not rush the V.",
+  "blues":"Dominant I, IV and V. Treat I7 as home.",
+  "gospel":"I7 into IV is the handshake.",
+  "neosoul":"Maj9 and m11 want space. 7sus4 delays the third.",
+  "pop":"I–V–vi–IV. Color with add9.",
+  "andalusian":"Minor descent. V7 at the bottom is the real dominant.",
+  "circle":"Each chord is V of the next."
 };
 function theoryReply(prompt,ctx){
   const text=String(prompt||"").trim();
-  if(!text)return {say:"Give me a key and a form. Example: bossa in F, or 12-bar blues in G.",chart:null,style:null};
-  if(/reharm|color this|apply|current/.test(text.toLowerCase())){
-    return {say:"Using the current chart. Pick a style on the left and hit Restyle — extra chords land on the words. Save that version to the library to compare.",chart:null,style:detectStyleHint(text)};
-  }
-  const key=detectKeyFromText(text)||(ctx&&ctx.key)||"C";
-  const form=detectForm(text)||"ii-v-i";
+  if(!text)return {say:"Load a song, then say: this song in Em, light jazz style.",applyToSong:false};
+  const target=parseTargetKey(text);
   const style=detectStyleHint(text);
-  const built=formInKey(form,key);
-  const why=WHY[form]||"";
-  const chart=progressionToOnSong(built.name+" in "+key,key,built.chords,why);
+  const density=detectDensityHint(text);
+  const form=detectForm(text);
+  const hasChart=ctx&&ctx.parsed&&(ctx.parsed.sections||[]).some(s=>(s.lines||[]).length);
+  const useChart=hasChart&&(wantsCurrentChart(text)||(!form&&(target||style)));
+  if(useChart){
+    let parsed=ctx.parsed;
+    const from=guessKey(collectChords(parsed),parsed.meta&&parsed.meta.key);
+    if(target)parsed=transposeParsedSong(parsed,from,target);
+    const newKey=target?target.label:(from.root+(from.minor?"m":""));
+    const bits=[];
+    if(target)bits.push("moved to "+newKey+(target.minor?" minor":""));
+    if(style)bits.push((STYLES[style]||{}).name||style);
+    if(density!=null)bits.push(["paint","light","medium","full"][density]+" extras");
+    return {
+      say:"Working on this chart"+(bits.length?" — "+bits.join(", "):".")+". Lyrics stay put; chords move with the key.",
+      applyToSong:true,
+      parsed,
+      style,
+      density,
+      key:newKey
+    };
+  }
+  if(!hasChart&&(wantsCurrentChart(text)||(!form&&(style||target)))){
+    return {say:"No chart loaded yet. Import or paste a song first, then ask again.",applyToSong:false};
+  }
+  const key=(target&&target.root)||(ctx&&ctx.key)||"C";
+  const useForm=form||"ii-v-i";
+  const built=formInKey(useForm,key);
   return {
-    say:built.name+" in "+key+": "+built.chords.join(" – ")+"\n"+why,
-    chart,
+    say:built.name+" in "+key+": "+built.chords.join(" – ")+"\n"+(WHY[useForm]||""),
+    chart:progressionToOnSong(built.name+" in "+key,key,built.chords,WHY[useForm]),
     style,
-    form,
+    density,
+    applyToSong:false,
+    form:useForm,
     key
   };
 }
