@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chart Color — piano style expander</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">
+        <div class="mark">C</div>
+        <div>
+          <h1>Chart Color</h1>
+          <p>Import a chart. Pick a piano style. Extra changes land on the words.</p>
+        </div>
+      </div>
+      <div>
+        <label class="k">Import</label>
+        <div class="drop" id="drop">
+          <strong>Drop PDF, OnSong, ChordPro, or UG text</strong>
+          <span>.pdf · .onsong · .cho · .chopro · .crd · .pro · .txt</span>
+        </div>
+        <input id="file" type="file" hidden accept=".pdf,.onsong,.cho,.chopro,.crd,.pro,.txt,.chordpro,text/plain,application/pdf" />
+      </div>
+      <div>
+        <label class="k">Chart source</label>
+        <textarea class="src" id="src" spellcheck="false" placeholder="Paste OnSong, ChordPro, or Ultimate Guitar chords-over-lyrics…"></textarea>
+        <div class="actions" style="margin-top:8px">
+          <button class="btn ghost" id="sampleBossa" type="button">Demo: bossa tune</button>
+          <button class="btn ghost" id="sampleGrace" type="button">Demo: Amazing Grace</button>
+        </div>
+      </div>
+      <div>
+        <label class="k">Piano style</label>
+        <div class="styles" id="styles"></div>
+      </div>
+      <div>
+        <label class="k">How much extra harmony</label>
+        <div class="dens" id="dens">
+          <button type="button" data-d="0">Paint</button>
+          <button type="button" data-d="1">Light</button>
+          <button type="button" data-d="2" class="on">Medium</button>
+          <button type="button" data-d="3">Full</button>
+        </div>
+      </div>
+      <button class="btn" id="go" type="button">Restyle chart</button>
+    </aside>
+    <main class="main">
+      <div class="toolbar">
+        <div>
+          <h2 id="pageTitle">Chart</h2>
+          <div class="meta-line" id="pageMeta">Piano charts only — no staff notation.</div>
+        </div>
+        <div class="tools">
+          <button class="btn ghost" id="dlCho" type="button">ChordPro</button>
+          <button class="btn ghost" id="dlOnsong" type="button">OnSong</button>
+          <button class="btn ghost" id="dlTxt" type="button">Aligned text</button>
+          <button class="btn" id="printBtn" type="button">Print / PDF</button>
+        </div>
+      </div>
+      <div class="chart-wrap" id="chart">
+        <div class="chart-head">
+          <div>
+            <h3 id="titleOut">Untitled</h3>
+            <div class="by" id="byOut"></div>
+          </div>
+          <div class="badges">
+            <span class="badge" id="badgeKey">Key</span>
+            <span class="badge" id="badgeStyle">Style</span>
+            <span class="badge" id="badgeDens">Medium</span>
+          </div>
+        </div>
+        <div id="chartBody"></div>
+      </div>
+      <div class="empty" id="empty" hidden></div>
+    </main>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }</script>
+  <script src="harmony.js"></script>
+  <script src="parser.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
