@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon.svg" />
   <link rel="icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=4" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
   <div class="app">
@@ -37,6 +37,7 @@
         <div class="actions" style="margin-top:8px">
           <button class="btn ghost" id="sampleBossa" type="button">Demo: bossa tune</button>
           <button class="btn ghost" id="sampleGrace" type="button">Demo: Amazing Grace</button>
+          <button class="btn ghost" id="pasteClip" type="button">Paste clipboard</button>
         </div>
       </div>
       <div>
@@ -86,15 +87,12 @@
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }</script>
-  <script src="harmony.js?v=4"></script>
-  <script src="parser.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="harmony.js?v=5"></script>
+  <script src="parser.js?v=5"></script>
+  <script src="app.js?v=5"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(regs){
-        regs.forEach(function(r){ r.update(); });
-      });
-      navigator.serviceWorker.register("./sw.js?v=4");
+      navigator.serviceWorker.register("./sw.js?v=5");
     }
   </script>
 </body>
