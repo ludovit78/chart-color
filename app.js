@@ -41,5 +41,27 @@ window.addEventListener("message",ev=>{
   if(typeof d.text==="string"&&d.text.trim())loadChartText(d.text);
 });
 async function loadPdf(file){if(!window.pdfjsLib){alert("PDF engine still loading");return;}const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;let text="";for(let i=1;i<=pdf.numPages;i++){const page=await pdf.getPage(i);const content=await page.getTextContent();text+=extractTextFromPdfItems(content.items)+"\n\n";}loadChartText(text.trim()+"\n");}
-function wire(){renderStyleButtons();renderDensity();$("#src").value=state.raw;$("#dens").onclick=e=>{const b=e.target.closest("button");if(!b)return;state.density=Number(b.dataset.d);renderDensity();restyle();};$("#src").addEventListener("input",e=>state.raw=e.target.value);$("#go").onclick=parseCurrent;$("#sampleBossa").onclick=()=>{state.raw=SAMPLE;$("#src").value=SAMPLE;state.style="bossa";renderStyleButtons();parseCurrent();};$("#sampleGrace").onclick=()=>{state.raw=AMAZING;$("#src").value=AMAZING;state.style="gospel";renderStyleButtons();parseCurrent();};$("#dlCho").onclick=()=>{if(!state.styled)parseCurrent();downloadText(slug(state.styled.meta.title)+".cho",toChordPro(state.styled));};$("#dlOnsong").onclick=()=>{if(!state.styled)parseCurrent();downloadText(slug(state.styled.meta.title)+".onsong",toOnSong(state.styled));};$("#dlTxt").onclick=()=>{if(!state.styled)parseCurrent();downloadText(slug(state.styled.meta.title)+"-chart.txt",toAlignedChart(state.styled));};$("#printBtn").onclick=()=>window.print();const drop=$("#drop"),file=$("#file");drop.onclick=()=>file.click();file.onchange=()=>handleFiles(file.files);drop.addEventListener("drop",e=>{e.preventDefault();handleFiles(e.dataTransfer.files);});["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>e.preventDefault()));takeIncomingChart();parseCurrent();}
+function wire(){
+  renderStyleButtons();
+  renderDensity();
+  $("#src").value=state.raw;
+  $("#dens").onclick=e=>{const b=e.target.closest("button");if(!b)return;state.density=Number(b.dataset.d);renderDensity();restyle();};
+  $("#src").addEventListener("input",e=>state.raw=e.target.value);
+  $("#go").onclick=parseCurrent;
+  $("#sampleBossa").onclick=()=>{state.raw=SAMPLE;$("#src").value=SAMPLE;state.style="bossa";renderStyleButtons();parseCurrent();};
+  $("#sampleGrace").onclick=()=>{state.raw=AMAZING;$("#src").value=AMAZING;state.style="gospel";renderStyleButtons();parseCurrent();};
+  const paste=$("#pasteClip");
+  if(paste)paste.onclick=async()=>{try{const t=await navigator.clipboard.readText();if(t&&t.trim())loadChartText(t);else alert("Clipboard is empty.");}catch(e){alert("Paste into the box instead.");}};
+  $("#dlCho").onclick=()=>{if(!state.styled)parseCurrent();downloadText(slug(state.styled.meta.title)+".cho",toChordPro(state.styled));};
+  $("#dlOnsong").onclick=()=>{if(!state.styled)parseCurrent();downloadText(slug(state.styled.meta.title)+".onsong",toOnSong(state.styled));};
+  $("#dlTxt").onclick=()=>{if(!state.styled)parseCurrent();downloadText(slug(state.styled.meta.title)+"-chart.txt",toAlignedChart(state.styled));};
+  $("#printBtn").onclick=()=>window.print();
+  const drop=$("#drop"),file=$("#file");
+  drop.onclick=()=>file.click();
+  file.onchange=()=>handleFiles(file.files);
+  drop.addEventListener("drop",e=>{e.preventDefault();handleFiles(e.dataTransfer.files);});
+  ["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>e.preventDefault()));
+  takeIncomingChart();
+  parseCurrent();
+}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",wire);else wire();
