@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#1a1410" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Chart Color" />
-  <title>Chart Color — piano style expander</title>
+  <title>Chart Color</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon.svg" />
   <link rel="icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="styles.css?v=7" />
 </head>
 <body>
   <div class="app">
@@ -20,24 +18,28 @@
         <div class="mark">C</div>
         <div>
           <h1>Chart Color</h1>
-          <p>Import a chart. Pick a piano style. Extra changes land on the words.</p>
+          <p>Import. Style. Compare. Ask the theory bot.</p>
         </div>
       </div>
       <div>
         <label class="k">Import</label>
         <div class="drop" id="drop">
-          <strong>Drop PDF, OnSong, ChordPro, or UG text</strong>
-          <span>Share from OnSong as OnSong / ChordPro / Text — not Archive</span>
+          <strong>Drop or tap for PDF, OnSong, ChordPro, UG</strong>
+          <span>Clear first if you want a different song</span>
         </div>
         <input id="file" type="file" hidden accept="*/*" />
       </div>
       <div>
         <label class="k">Chart source</label>
-        <textarea class="src" id="src" spellcheck="false" placeholder="Paste OnSong, ChordPro, or Ultimate Guitar chords-over-lyrics…"></textarea>
-        <div class="actions" style="margin-top:8px">
-          <button class="btn ghost" id="sampleBossa" type="button">Demo: bossa tune</button>
-          <button class="btn ghost" id="sampleGrace" type="button">Demo: Amazing Grace</button>
-          <button class="btn ghost" id="pasteClip" type="button">Paste clipboard</button>
+        <textarea class="src" id="src" spellcheck="false" placeholder="Paste a chart…"></textarea>
+        <div class="actions">
+          <button class="btn ghost" id="clearSrc" type="button">Clear source</button>
+          <button class="btn ghost" id="saveLib" type="button">Save to library</button>
+        </div>
+        <div class="actions">
+          <button class="btn ghost" id="sampleBossa" type="button">Demo bossa</button>
+          <button class="btn ghost" id="sampleGrace" type="button">Demo Grace</button>
+          <button class="btn ghost" id="pasteClip" type="button">Paste</button>
         </div>
       </div>
       <div>
@@ -54,12 +56,28 @@
         </div>
       </div>
       <button class="btn" id="go" type="button">Restyle chart</button>
+      <div>
+        <label class="k">Library</label>
+        <div id="libList" class="lib-list"></div>
+        <div class="actions">
+          <button class="btn ghost" id="compareBtn" type="button">Compare selected</button>
+        </div>
+      </div>
+      <div class="bot">
+        <label class="k">Theory bot</label>
+        <div id="botLog" class="bot-log"></div>
+        <div class="chips" id="botChips"></div>
+        <div class="bot-row">
+          <input id="botIn" type="text" placeholder="bossa in F, blues in G…" />
+          <button class="btn" id="botGo" type="button">Ask</button>
+        </div>
+      </div>
     </aside>
     <main class="main">
       <div class="toolbar">
         <div>
           <h2 id="pageTitle">Chart</h2>
-          <div class="meta-line" id="pageMeta">Piano charts only — no staff notation. Offline after first visit.</div>
+          <div class="meta-line" id="pageMeta">Piano charts only. Library stays on this phone.</div>
         </div>
         <div class="tools">
           <button class="btn ghost" id="dlCho" type="button">ChordPro</button>
@@ -68,6 +86,7 @@
           <button class="btn" id="printBtn" type="button">Print / PDF</button>
         </div>
       </div>
+      <div id="compareWrap" class="compare" hidden></div>
       <div class="chart-wrap" id="chart">
         <div class="chart-head">
           <div>
@@ -82,18 +101,14 @@
         </div>
         <div id="chartBody"></div>
       </div>
-      <div class="empty" id="empty" hidden></div>
     </main>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>if (window.pdfjsLib) { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }</script>
-  <script src="harmony.js?v=6"></script>
-  <script src="parser.js?v=6"></script>
-  <script src="app.js?v=6"></script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js?v=6");
-    }
-  </script>
+  <script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+  <script src="harmony.js?v=7"></script>
+  <script src="parser.js?v=7"></script>
+  <script src="theory.js?v=7"></script>
+  <script src="app.js?v=7"></script>
+  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=7");</script>
 </body>
 </html>
