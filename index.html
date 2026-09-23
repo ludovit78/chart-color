@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#1a1410" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Chart Color" />
   <title>Chart Color — piano style expander</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="icon" href="icon.svg" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -51,7 +58,7 @@
       <div class="toolbar">
         <div>
           <h2 id="pageTitle">Chart</h2>
-          <div class="meta-line" id="pageMeta">Piano charts only — no staff notation.</div>
+          <div class="meta-line" id="pageMeta">Piano charts only — no staff notation. Offline after first visit.</div>
         </div>
         <div class="tools">
           <button class="btn ghost" id="dlCho" type="button">ChordPro</button>
@@ -82,5 +89,10 @@
   <script src="harmony.js"></script>
   <script src="parser.js"></script>
   <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
+    }
+  </script>
 </body>
 </html>

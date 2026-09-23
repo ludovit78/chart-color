@@ -1,0 +1,18 @@
+{
+  "name": "Chart Color",
+  "short_name": "Chart Color",
+  "description": "Piano chart stylist. Works offline after first open.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1a1410",
+  "theme_color": "#1a1410",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
