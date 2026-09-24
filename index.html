@@ -9,7 +9,7 @@
   <title>Chart Color</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=9" />
+  <link rel="stylesheet" href="styles.css?v=10" />
 </head>
 <body>
   <div class="app">
@@ -25,7 +25,7 @@
         <label class="k">Import</label>
         <div class="drop" id="drop">
           <strong>Drop or tap for PDF, OnSong, ChordPro, UG</strong>
-          <span>Clear first if you want a different song</span>
+          <span>Hold a chord on the chart to see the piano</span>
         </div>
         <input id="file" type="file" hidden accept="*/*" />
       </div>
@@ -80,7 +80,7 @@
       <div class="toolbar">
         <div>
           <h2 id="pageTitle">Chart</h2>
-          <div class="meta-line" id="pageMeta">Piano charts only. Library stays on this phone.</div>
+          <div class="meta-line" id="pageMeta">Hold a chord to open the piano. Library stays on this phone.</div>
         </div>
         <div class="tools">
           <button class="btn ghost" id="dlCho" type="button">ChordPro</button>
@@ -106,12 +106,24 @@
       </div>
     </main>
   </div>
+  <div id="pianoSheet" class="piano-sheet" hidden>
+    <div class="piano-head">
+      <div>
+        <h3 id="pianoName">Chord</h3>
+        <p id="pianoHint">One octave — red keys are the notes</p>
+      </div>
+      <button class="btn ghost" id="pianoClose" type="button">Close</button>
+    </div>
+    <div id="pianoKb"></div>
+    <div class="chips" id="pianoTabs"></div>
+  </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
-  <script src="harmony.js?v=9"></script>
-  <script src="parser.js?v=9"></script>
-  <script src="theory.js?v=9"></script>
-  <script src="app.js?v=9"></script>
-  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=9");</script>
+  <script src="harmony.js?v=10"></script>
+  <script src="parser.js?v=10"></script>
+  <script src="theory.js?v=10"></script>
+  <script src="piano.js?v=10"></script>
+  <script src="app.js?v=10"></script>
+  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=10");</script>
 </body>
 </html>
