@@ -47,10 +47,7 @@ function pianoCards(ch,name){
   const cards=[];
   const n=Math.min(stack.length,4);
   for(let i=0;i<n;i++){
-    cards.push({
-      label:i===0?name:name+" Inversion "+i,
-      keys:stack.slice()
-    });
+    cards.push({label:i===0?name:name+" Inversion "+i,keys:stack.slice()});
     stack=invertUp(stack);
   }
   if(ch.bass){
@@ -90,7 +87,7 @@ function drawTwoOctaves(keys){
   whites.appendChild(last);
   const blackPat=[1,3,null,6,8,10,null];
   for(let oct=0;oct<2;oct++){
-    blackPat.forEach((pc,i)=>{
+    blackPat.forEach(pc=>{
       if(pc==null)return;
       const midi=oct*12+pc;
       const d=document.createElement("div");
@@ -106,8 +103,7 @@ function drawTwoOctaves(keys){
 function renderPianoSheet(){
   const box=$("#pianoKb");if(!box)return;
   box.innerHTML="";
-  $("#pianoName").textContent=pianoState.name+" on Piano";
-  $("#pianoHint").textContent="Swipe for inversions";
+  const title=$("#pianoName");if(title)title.textContent=pianoState.name+" on Piano";
   pianoState.cards.forEach(card=>{
     const fig=document.createElement("figure");
     fig.className="os-card";
@@ -119,33 +115,25 @@ function renderPianoSheet(){
   });
 }
 let pianoState={cards:[],name:""};
+function pianoOpen(){const s=$("#pianoSheet");return s&&!s.hidden;}
 function openPiano(name){
   const ch=parseChord(name);
   const cards=pianoCards(ch,name);
   if(!cards.length)return;
   pianoState={cards,name};
-  $("#pianoSheet").hidden=false;
+  const s=$("#pianoSheet");if(s)s.hidden=false;
   renderPianoSheet();
 }
-function closePiano(){$("#pianoSheet").hidden=true;}
+function closePiano(){const s=$("#pianoSheet");if(s)s.hidden=true;}
 (function(){
-  let timer=null;
-  function chordEl(e){return e.target&&e.target.closest?e.target.closest("#chartBody .ch"):null;}
-  function start(e){
-    const el=chordEl(e);if(!el)return;
-    const name=el.textContent.replace(/\u00a0/g,"").trim();
-    if(!name)return;
-    timer=setTimeout(()=>{timer=null;openPiano(name);},380);
-  }
-  function cancel(){if(timer){clearTimeout(timer);timer=null;}}
-  document.addEventListener("touchstart",start,{passive:true});
-  document.addEventListener("touchend",cancel);
-  document.addEventListener("touchmove",cancel);
-  document.addEventListener("mousedown",start);
-  document.addEventListener("mouseup",cancel);
+  function chordName(el){return el.textContent.replace(/\u00a0/g,"").trim();}
   document.addEventListener("click",e=>{
-    const el=chordEl(e);if(!el)return;
-    if(e.detail>=2)openPiano(el.textContent.replace(/\u00a0/g,"").trim());
+    const el=e.target&&e.target.closest?e.target.closest("#chartBody .ch"):null;
+    if(!el)return;
+    const name=chordName(el);
+    if(!name)return;
+    e.preventDefault();
+    openPiano(name);
   });
   function hook(){const c=document.querySelector("#pianoClose");if(c)c.onclick=closePiano;}
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",hook);else hook();
