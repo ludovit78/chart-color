@@ -6,7 +6,7 @@ function chordIntervals(ch){
   let iv;
   if(ch.kind==="dim"||/^dim/.test(q))iv=/7/.test(q)?[0,3,6,9]:[0,3,6];
   else if(ch.kind==="aug"||/^aug|^\+/.test(q))iv=[0,4,8];
-  else if(ch.kind==="m7b5"||/m7b5|0/.test(q))iv=[0,3,6,10];
+  else if(ch.kind==="m7b5"||/m7b5/.test(q))iv=[0,3,6,10];
   else if(ch.kind==="sus2"||/sus2/.test(q))iv=[0,2,7];
   else if(/7sus|sus4.*7|sus7/.test(q)||(ch.kind==="sus4"&&/7/.test(q)))iv=[0,5,7,10];
   else if(ch.kind==="sus4"||/^sus/.test(q))iv=[0,5,7];
@@ -40,7 +40,7 @@ function voicingSet(ch){
   const root=noteIndex(ch.root);
   const third=pcs.find(p=>p===(root+3)%12||p===(root+4)%12);
   const seventh=pcs.find(p=>p===(root+10)%12||p===(root+11)%12||p===(root+9)%12);
-  const ninth=pcs.find(p=>p===(root+2)%12||p===(root+3)%12&&p!==third);
+  const ninth=pcs.find(p=>p===(root+2)%12);
   const list=[];
   const names=["Root","1st inv","2nd inv","3rd inv"];
   const cycle=stackFromBass(pcs,root);
@@ -60,7 +60,7 @@ function drawOctave(el,pcs,bass){
   const board=document.createElement("div");board.className="kb";
   const whites=document.createElement("div");whites.className="kb-white";
   const blacks=document.createElement("div");blacks.className="kb-black";
-  WHITE_PC.concat([12]).forEach((pc,i)=>{
+  WHITE_PC.concat([12]).forEach(pc=>{
     const real=pc%12;
     const k=document.createElement("div");
     k.className="k-w"+(pcs.includes(real)?" on":"")+(bass===real?" bass":"");
@@ -100,21 +100,25 @@ function openPiano(name){
   renderPianoSheet();
 }
 function closePiano(){$("#pianoSheet").hidden=true;}
-function bindChordHold(el){
-  let t=null,moved=false;
-  const start=e=>{
-    if(!el.textContent||el.textContent==="\u00a0")return;
-    moved=false;
-    t=setTimeout(()=>{t=null;openPiano(el.textContent.trim());},420);
-  };
-  const cancel=()=>{if(t){clearTimeout(t);t=null;}};
-  el.addEventListener("touchstart",start,{passive:true});
-  el.addEventListener("touchend",cancel);
-  el.addEventListener("touchmove",()=>{moved=true;cancel();});
-  el.addEventListener("mousedown",start);
-  el.addEventListener("mouseup",cancel);
-  el.addEventListener("mouseleave",cancel);
-  el.addEventListener("click",e=>{
-    if(e.detail>=2){e.preventDefault();openPiano(el.textContent.trim());}
+(function(){
+  let timer=null;
+  function chordEl(e){return e.target&&e.target.closest?e.target.closest("#chartBody .ch"):null;}
+  function start(e){
+    const el=chordEl(e);if(!el)return;
+    const name=el.textContent.replace(/\u00a0/g,"").trim();
+    if(!name)return;
+    timer=setTimeout(()=>{timer=null;openPiano(name);},420);
+  }
+  function cancel(){if(timer){clearTimeout(timer);timer=null;}}
+  document.addEventListener("touchstart",start,{passive:true});
+  document.addEventListener("touchend",cancel);
+  document.addEventListener("touchmove",cancel);
+  document.addEventListener("mousedown",start);
+  document.addEventListener("mouseup",cancel);
+  document.addEventListener("click",e=>{
+    const el=chordEl(e);if(!el)return;
+    if(e.detail>=2)openPiano(el.textContent.replace(/\u00a0/g,"").trim());
   });
-}
+  function hookClose(){const c=document.querySelector("#pianoClose");if(c)c.onclick=closePiano;}
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",hookClose);else hookClose();
+})();
