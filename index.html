@@ -9,7 +9,7 @@
   <title>Chart Color</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=11" />
+  <link rel="stylesheet" href="styles.css?v=12" />
 </head>
 <body>
   <div class="app">
@@ -25,7 +25,7 @@
         <label class="k">Import</label>
         <div class="drop" id="drop">
           <strong>Drop or tap for PDF, OnSong, ChordPro, UG</strong>
-          <span>Hold a chord on the chart to see the piano</span>
+          <span>Tap a chord on the chart to see the piano</span>
         </div>
         <input id="file" type="file" hidden accept="*/*" />
       </div>
@@ -80,7 +80,7 @@
       <div class="toolbar">
         <div>
           <h2 id="pageTitle">Chart</h2>
-          <div class="meta-line" id="pageMeta">Hold a chord to open the piano. Library stays on this phone.</div>
+          <div class="meta-line" id="pageMeta">Tap a chord to open the piano. Library stays on this phone.</div>
         </div>
         <div class="tools">
           <button class="btn ghost" id="dlCho" type="button">ChordPro</button>
@@ -116,11 +116,11 @@
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
-  <script src="harmony.js?v=11"></script>
-  <script src="parser.js?v=11"></script>
-  <script src="theory.js?v=11"></script>
-  <script src="piano.js?v=11"></script>
-  <script src="app.js?v=11"></script>
-  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=11");</script>
+  <script src="harmony.js?v=12"></script>
+  <script src="parser.js?v=12"></script>
+  <script src="theory.js?v=12"></script>
+  <script src="piano.js?v=12"></script>
+  <script src="app.js?v=12"></script>
+  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=12");</script>
 </body>
 </html>
