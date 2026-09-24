@@ -1,101 +1,129 @@
-const WHITE_PC=[0,2,4,5,7,9,11];
-const BLACK_PC=[1,3,6,8,10];
-function chordIntervals(ch){
+function chordToneIvs(ch){
   if(!ch||!ch.root||ch.kind==="nc")return [];
   const q=String(ch.quality||"").toLowerCase();
-  let iv;
-  if(ch.kind==="dim"||/^dim/.test(q))iv=/7/.test(q)?[0,3,6,9]:[0,3,6];
-  else if(ch.kind==="aug"||/^aug|^\+/.test(q))iv=[0,4,8];
-  else if(ch.kind==="m7b5"||/m7b5/.test(q))iv=[0,3,6,10];
-  else if(ch.kind==="sus2"||/sus2/.test(q))iv=[0,2,7];
-  else if(/7sus|sus4.*7|sus7/.test(q)||(ch.kind==="sus4"&&/7/.test(q)))iv=[0,5,7,10];
-  else if(ch.kind==="sus4"||/^sus/.test(q))iv=[0,5,7];
-  else if(/maj9|maj7.*9/.test(q))iv=[0,4,7,11,2];
-  else if(/maj7|maj/.test(q))iv=[0,4,7,11];
-  else if(/m11/.test(q))iv=[0,3,7,10,2,5];
-  else if(/m9/.test(q))iv=[0,3,7,10,2];
-  else if(/m6/.test(q))iv=[0,3,7,9];
-  else if(/^m7/.test(q)||(ch.kind==="min"&&/7/.test(q)))iv=[0,3,7,10];
-  else if(ch.kind==="min")iv=[0,3,7];
-  else if(/7#9|7b10/.test(q))iv=[0,4,7,10,3];
-  else if(/13/.test(q))iv=[0,4,7,10,2,9];
-  else if(/11/.test(q))iv=[0,4,7,10,2,5];
-  else if(/9/.test(q)&&!/add/.test(q)&&!/^2$/.test(q))iv=[0,4,7,10,2];
-  else if(/add9|^2$/.test(q))iv=[0,4,7,2];
-  else if(/^6/.test(q))iv=[0,4,7,9];
-  else if(/^7/.test(q)||ch.kind==="dom")iv=[0,4,7,10];
-  else iv=[0,4,7];
+  if(ch.kind==="dim"||/^dim/.test(q))return /7/.test(q)?[0,3,6,9]:[0,3,6];
+  if(ch.kind==="aug"||/^aug|^\+/.test(q))return [0,4,8];
+  if(ch.kind==="m7b5"||/m7b5/.test(q))return [0,3,6,10];
+  if(ch.kind==="sus2"||/sus2/.test(q))return [0,2,7];
+  if(/7sus|sus7/.test(q)||(ch.kind==="sus4"&&/7/.test(q)))return [0,5,7,10];
+  if(ch.kind==="sus4"||/^sus/.test(q))return [0,5,7];
+  if(/maj9/.test(q))return [0,4,7,11,2];
+  if(/maj7|maj/.test(q))return [0,4,7,11];
+  if(/m11/.test(q))return [0,3,7,10,5];
+  if(/m9/.test(q))return [0,3,7,10,2];
+  if(/m6/.test(q))return [0,3,7,9];
+  if(/^m7/.test(q)||(ch.kind==="min"&&/7/.test(q)))return [0,3,7,10];
+  if(ch.kind==="min")return [0,3,7];
+  if(/7#9/.test(q))return [0,4,7,10,3];
+  if(/13/.test(q))return [0,4,7,10,9];
+  if(/11/.test(q))return [0,4,7,10,5];
+  if(/9/.test(q)&&!/add/.test(q)&&!/^2$/.test(q))return [0,4,7,10,2];
+  if(/add9|^2$/.test(q))return [0,4,7,2];
+  if(/^6/.test(q))return [0,4,7,9];
+  if(/^7/.test(q)||ch.kind==="dom")return [0,4,7,10];
+  return [0,4,7];
+}
+function closeStack(ivs){
+  const u=[...new Set(ivs.map(n=>((n%12)+12)%12))].sort((a,b)=>a-b);
+  if(!u.length)return [];
+  const out=[u[0]];
+  for(let i=1;i<u.length;i++){
+    let n=u[i];
+    while(n<=out[out.length-1])n+=12;
+    out.push(n);
+  }
+  return out;
+}
+function invertUp(stack){
+  if(stack.length<2)return stack.slice();
+  const top=stack[0]+12;
+  return stack.slice(1).concat(top);
+}
+function pianoCards(ch,name){
+  const ivs=chordToneIvs(ch);
+  if(!ivs.length)return [];
   const root=noteIndex(ch.root);
-  const pcs=[...new Set(iv.map(n=>(root+n)%12))];
-  if(ch.bass)pcs.push(noteIndex(ch.bass));
-  return [...new Set(pcs)];
+  let stack=closeStack(ivs).map(n=>root+n);
+  const cards=[];
+  const n=Math.min(stack.length,4);
+  for(let i=0;i<n;i++){
+    cards.push({
+      label:i===0?name:name+" Inversion "+i,
+      keys:stack.slice()
+    });
+    stack=invertUp(stack);
+  }
+  if(ch.bass){
+    const b=noteIndex(ch.bass);
+    let slash=closeStack(ivs).map(n=>root+n);
+    while(slash[0]%12!==b)slash=invertUp(slash);
+    cards.unshift({label:name,keys:slash});
+  }
+  const third=ivs.find(x=>x===3||x===4);
+  const seventh=ivs.find(x=>x===10||x===11||x===9);
+  const ninth=ivs.find(x=>x===2);
+  if(seventh!=null&&third!=null){
+    cards.push({label:name+" shell",keys:closeStack([0,seventh,third+12]).map(n=>root+n)});
+  }
+  if(third!=null&&seventh!=null&&ninth!=null){
+    cards.push({label:name+" color",keys:closeStack([third,seventh,ninth]).map(n=>root+n)});
+  }
+  return cards;
 }
-function stackFromBass(pcs,bass){
-  const b=((bass%12)+12)%12;
-  return pcs.slice().sort((a,c)=>((a-b+12)%12)-((c-b+12)%12));
+function drawTwoOctaves(keys){
+  const wrap=document.createElement("div");
+  wrap.className="os-kb";
+  const whites=document.createElement("div");whites.className="os-w";
+  const blacks=document.createElement("div");blacks.className="os-b";
+  const W=[0,2,4,5,7,9,11];
+  const set=new Set(keys.map(k=>((k%24)+24)%24));
+  for(let oct=0;oct<2;oct++){
+    W.forEach(pc=>{
+      const midi=oct*12+pc;
+      const d=document.createElement("div");
+      d.className="os-white"+(set.has(midi)||set.has(midi+24)?" on":"");
+      whites.appendChild(d);
+    });
+  }
+  const last=document.createElement("div");
+  last.className="os-white"+(set.has(24)||set.has(0)?" on":"");
+  whites.appendChild(last);
+  const blackPat=[1,3,null,6,8,10,null];
+  for(let oct=0;oct<2;oct++){
+    blackPat.forEach((pc,i)=>{
+      if(pc==null)return;
+      const midi=oct*12+pc;
+      const d=document.createElement("div");
+      d.className="os-black"+(set.has(midi)?" on":"");
+      const whiteIndex=oct*7+(pc===1?0:pc===3?1:pc===6?3:pc===8?4:5);
+      d.style.left=((whiteIndex+0.72)/15*100)+"%";
+      blacks.appendChild(d);
+    });
+  }
+  wrap.append(whites,blacks);
+  return wrap;
 }
-function voicingSet(ch){
-  const pcs=chordIntervals(ch);
-  if(!pcs.length)return [];
-  const root=noteIndex(ch.root);
-  const third=pcs.find(p=>p===(root+3)%12||p===(root+4)%12);
-  const seventh=pcs.find(p=>p===(root+10)%12||p===(root+11)%12||p===(root+9)%12);
-  const ninth=pcs.find(p=>p===(root+2)%12);
-  const list=[];
-  const names=["Root","1st inv","2nd inv","3rd inv"];
-  const cycle=stackFromBass(pcs,root);
-  cycle.forEach((bass,i)=>{
-    if(i>=4)return;
-    list.push({id:"inv"+i,label:names[i]||("Inv "+i),pcs,bass,hint:pitchName(bass,true)+" in the bass"});
-  });
-  if(ch.bass)list.unshift({id:"slash",label:"As written /"+ch.bass,pcs,bass:noteIndex(ch.bass),hint:"Slash bass as on the chart"});
-  const shellPcs=[root,seventh,third].filter(n=>n!=null);
-  if(shellPcs.length>=2)list.push({id:"shell",label:"Shell (R + 7 + 3)",pcs:[...new Set(shellPcs)],bass:root,hint:"Left hand root, right hand 7 and 3"});
-  const color=[third,seventh,ninth].filter(n=>n!=null);
-  if(color.length>=2)list.push({id:"color",label:"Color (3 + 7 + 9)",pcs:[...new Set(color)],bass:color[0],hint:"No root — band already has the bass"});
-  return list;
-}
-function drawOctave(el,pcs,bass){
-  el.innerHTML="";
-  const board=document.createElement("div");board.className="kb";
-  const whites=document.createElement("div");whites.className="kb-white";
-  const blacks=document.createElement("div");blacks.className="kb-black";
-  WHITE_PC.concat([12]).forEach(pc=>{
-    const real=pc%12;
-    const k=document.createElement("div");
-    k.className="k-w"+(pcs.includes(real)?" on":"")+(bass===real?" bass":"");
-    k.innerHTML="<span>"+pitchName(real,false)+"</span>";
-    whites.appendChild(k);
-  });
-  const blackSlots=[0,1,3,4,5];
-  BLACK_PC.forEach((pc,i)=>{
-    const k=document.createElement("div");
-    k.className="k-b"+(pcs.includes(pc)?" on":"")+(bass===pc?" bass":"");
-    k.style.left=(blackSlots[i]*(100/7)+9)+"%";
-    blacks.appendChild(k);
-  });
-  board.append(whites,blacks);el.appendChild(board);
-}
-let pianoState={list:[],i:0,name:""};
 function renderPianoSheet(){
-  const v=pianoState.list[pianoState.i];if(!v)return;
-  $("#pianoName").textContent=pianoState.name;
-  $("#pianoHint").textContent=v.label+" — "+v.hint;
-  drawOctave($("#pianoKb"),v.pcs,v.bass);
-  const tabs=$("#pianoTabs");tabs.innerHTML="";
-  pianoState.list.forEach((item,idx)=>{
-    const b=document.createElement("button");
-    b.type="button";b.className="chip"+(idx===pianoState.i?" on":"");
-    b.textContent=item.label;
-    b.onclick=()=>{pianoState.i=idx;renderPianoSheet();};
-    tabs.appendChild(b);
+  const box=$("#pianoKb");if(!box)return;
+  box.innerHTML="";
+  $("#pianoName").textContent=pianoState.name+" on Piano";
+  $("#pianoHint").textContent="Swipe for inversions";
+  pianoState.cards.forEach(card=>{
+    const fig=document.createElement("figure");
+    fig.className="os-card";
+    fig.appendChild(drawTwoOctaves(card.keys));
+    const cap=document.createElement("figcaption");
+    cap.textContent=card.label;
+    fig.appendChild(cap);
+    box.appendChild(fig);
   });
 }
+let pianoState={cards:[],name:""};
 function openPiano(name){
   const ch=parseChord(name);
-  const list=voicingSet(ch);
-  if(!list.length)return;
-  pianoState={list,i:0,name:name};
+  const cards=pianoCards(ch,name);
+  if(!cards.length)return;
+  pianoState={cards,name};
   $("#pianoSheet").hidden=false;
   renderPianoSheet();
 }
@@ -107,7 +135,7 @@ function closePiano(){$("#pianoSheet").hidden=true;}
     const el=chordEl(e);if(!el)return;
     const name=el.textContent.replace(/\u00a0/g,"").trim();
     if(!name)return;
-    timer=setTimeout(()=>{timer=null;openPiano(name);},420);
+    timer=setTimeout(()=>{timer=null;openPiano(name);},380);
   }
   function cancel(){if(timer){clearTimeout(timer);timer=null;}}
   document.addEventListener("touchstart",start,{passive:true});
@@ -119,6 +147,6 @@ function closePiano(){$("#pianoSheet").hidden=true;}
     const el=chordEl(e);if(!el)return;
     if(e.detail>=2)openPiano(el.textContent.replace(/\u00a0/g,"").trim());
   });
-  function hookClose(){const c=document.querySelector("#pianoClose");if(c)c.onclick=closePiano;}
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",hookClose);else hookClose();
+  function hook(){const c=document.querySelector("#pianoClose");if(c)c.onclick=closePiano;}
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",hook);else hook();
 })();
