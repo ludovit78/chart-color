@@ -61,7 +61,7 @@ async function handleFiles(files){
   }catch(e){alert("Could not read that file.");resetFileInput();}
 }
 function resetFileInput(){const f=$("#file");if(f)f.value="";}
-function loadChartText(text){state.raw=String(text||"").replace(/\r\n/g,"\n");const box=$("#src");if(box)box.value=state.raw;const cmp=$("#compareWrap");if(cmp)cmp.hidden=true;parseCurrent();}
+function loadChartText(text){state.raw=String(text||"").replace(/\r\n/g,"\n");const box=$("#src");if(box)box.value=state.raw;parseCurrent();}
 function clearSource(){
   state.raw="";state.parsed=null;state.styled=null;
   const box=$("#src");if(box)box.value="";
@@ -69,7 +69,13 @@ function clearSource(){
   $("#chartBody").innerHTML="";
   $("#titleOut").textContent="Cleared — load another song";
   $("#byOut").textContent="";
-  const cmp=$("#compareWrap");if(cmp)cmp.hidden=true;
+  clearCompare();
+}
+function clearCompare(){
+  selectedLib=new Set();
+  const wrap=$("#compareWrap");
+  if(wrap){wrap.hidden=true;wrap.innerHTML="";}
+  renderLib();
 }
 function currentTitle(){return (state.styled&&state.styled.meta&&state.styled.meta.title)||"Untitled";}
 function saveCurrent(){
@@ -98,7 +104,13 @@ function compareSelected(){
   const list=loadLib().filter(x=>selectedLib.has(x.id));
   if(list.length<2){alert("Tick two library items, then Compare.");return;}
   const wrap=$("#compareWrap");wrap.hidden=false;wrap.innerHTML="";
-  list.slice(0,2).forEach(item=>{const col=document.createElement("div");col.className="col";col.textContent=item.title+" — "+item.style+"\n\n"+(item.styled||item.raw);wrap.appendChild(col);});
+  const bar=document.createElement("div");bar.className="compare-bar";
+  bar.innerHTML="<span>Compare</span>";
+  const clr=document.createElement("button");clr.type="button";clr.className="btn ghost";clr.textContent="Clear compare";clr.onclick=clearCompare;
+  bar.appendChild(clr);wrap.appendChild(bar);
+  const grid=document.createElement("div");grid.className="compare-grid";
+  list.slice(0,2).forEach(item=>{const col=document.createElement("div");col.className="col";col.textContent=item.title+" — "+item.style+"\n\n"+(item.styled||item.raw);grid.appendChild(col);});
+  wrap.appendChild(grid);
 }
 function botSay(text,mine){
   const log=$("#botLog");if(!log)return;
@@ -147,6 +159,7 @@ function wire(){
   $("#clearSrc").onclick=clearSource;
   $("#saveLib").onclick=saveCurrent;
   $("#compareBtn").onclick=compareSelected;
+  const cc=$("#clearCompare");if(cc)cc.onclick=clearCompare;
   $("#sampleBossa").onclick=()=>{state.style="bossa";renderStyleButtons();loadChartText(SAMPLE);};
   $("#sampleGrace").onclick=()=>{state.style="gospel";renderStyleButtons();loadChartText(AMAZING);};
   const paste=$("#pasteClip");if(paste)paste.onclick=async()=>{try{const t=await navigator.clipboard.readText();if(t&&t.trim())loadChartText(t);else alert("Clipboard empty");}catch(e){alert("Paste into the box");}};
