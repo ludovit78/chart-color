@@ -9,7 +9,7 @@
   <title>Chart Color</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=13" />
+  <link rel="stylesheet" href="styles.css?v=14" />
 </head>
 <body>
   <div class="app">
@@ -34,7 +34,6 @@
         <textarea class="src" id="src" spellcheck="false" placeholder="Paste a chart…"></textarea>
         <div class="actions">
           <button class="btn ghost" id="clearSrc" type="button">Clear source</button>
-          <button class="btn ghost" id="saveLib" type="button">Save to library</button>
         </div>
         <div class="actions">
           <button class="btn ghost" id="sampleBossa" type="button">Demo bossa</button>
@@ -84,10 +83,11 @@
           <div class="meta-line" id="pageMeta">Tap a chord to open the piano. Library stays on this phone.</div>
         </div>
         <div class="tools">
+          <button class="btn" id="saveLib" type="button">Save to library</button>
           <button class="btn ghost" id="dlCho" type="button">ChordPro</button>
           <button class="btn ghost" id="dlOnsong" type="button">OnSong</button>
           <button class="btn ghost" id="dlTxt" type="button">Aligned text</button>
-          <button class="btn" id="printBtn" type="button">Print / PDF</button>
+          <button class="btn ghost" id="printBtn" type="button">Print / PDF</button>
         </div>
       </div>
       <div id="compareWrap" class="compare" hidden></div>
@@ -117,11 +117,11 @@
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
-  <script src="harmony.js?v=13"></script>
-  <script src="parser.js?v=13"></script>
-  <script src="theory.js?v=13"></script>
-  <script src="piano.js?v=13"></script>
-  <script src="app.js?v=13"></script>
-  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=13");</script>
+  <script src="harmony.js?v=14"></script>
+  <script src="parser.js?v=14"></script>
+  <script src="theory.js?v=14"></script>
+  <script src="piano.js?v=14"></script>
+  <script src="app.js?v=14"></script>
+  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=14");</script>
 </body>
 </html>
