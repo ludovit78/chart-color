@@ -5,7 +5,7 @@ let state={raw:"",parsed:null,styled:null,style:"bossa",density:2};
 let selectedLib=new Set();
 const $=s=>document.querySelector(s);
 function loadLib(){try{return JSON.parse(localStorage.getItem(LIB_KEY)||"[]");}catch(e){return [];}}
-function saveLib(list){localStorage.setItem(LIB_KEY,JSON.stringify(list));renderLib();}
+function saveLibStore(list){localStorage.setItem(LIB_KEY,JSON.stringify(list));renderLib();}
 function renderStyleButtons(){
   const box=$("#styles");if(!box||typeof STYLES==="undefined")return;
   box.innerHTML="";
@@ -61,7 +61,7 @@ async function handleFiles(files){
   }catch(e){alert("Could not read that file.");resetFileInput();}
 }
 function resetFileInput(){const f=$("#file");if(f)f.value="";}
-function loadChartText(text){state.raw=String(text||"").replace(/\r\n/g,"\n");const box=$("#src");if(box)box.value=state.raw;$("#compareWrap").hidden=true;parseCurrent();}
+function loadChartText(text){state.raw=String(text||"").replace(/\r\n/g,"\n");const box=$("#src");if(box)box.value=state.raw;const cmp=$("#compareWrap");if(cmp)cmp.hidden=true;parseCurrent();}
 function clearSource(){
   state.raw="";state.parsed=null;state.styled=null;
   const box=$("#src");if(box)box.value="";
@@ -69,14 +69,14 @@ function clearSource(){
   $("#chartBody").innerHTML="";
   $("#titleOut").textContent="Cleared — load another song";
   $("#byOut").textContent="";
-  $("#compareWrap").hidden=true;
+  const cmp=$("#compareWrap");if(cmp)cmp.hidden=true;
 }
 function currentTitle(){return (state.styled&&state.styled.meta&&state.styled.meta.title)||"Untitled";}
 function saveCurrent(){
-  if(!state.raw.trim()){alert("Nothing to save. Load or generate a chart first.");return;}
+  if(!state.raw.trim()){alert("Nothing to save.");return;}
   if(!state.styled)parseCurrent();
   const item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:currentTitle(),style:(STYLES[state.style]||{}).name||state.style,density:state.density,raw:state.raw,styled:state.styled?toAlignedChart(state.styled):state.raw,savedAt:new Date().toISOString()};
-  const list=loadLib();list.unshift(item);saveLib(list.slice(0,40));
+  saveLibStore([item].concat(loadLib()).slice(0,40));
 }
 function renderLib(){
   const box=$("#libList");if(!box)return;const list=loadLib();
@@ -90,7 +90,7 @@ function renderLib(){
     meta.innerHTML="<b>"+item.title+"</b><span>"+item.style+" · "+["Paint","Light","Medium","Full"][item.density||0]+"</span>";
     meta.onclick=()=>loadChartText(item.raw);
     const del=document.createElement("button");del.className="btn ghost";del.type="button";del.textContent="x";
-    del.onclick=e=>{e.stopPropagation();saveLib(loadLib().filter(x=>x.id!==item.id));selectedLib.delete(item.id);};
+    del.onclick=e=>{e.stopPropagation();saveLibStore(loadLib().filter(x=>x.id!==item.id));selectedLib.delete(item.id);};
     row.append(cb,meta,del);box.appendChild(row);
   });
 }
@@ -98,11 +98,7 @@ function compareSelected(){
   const list=loadLib().filter(x=>selectedLib.has(x.id));
   if(list.length<2){alert("Tick two library items, then Compare.");return;}
   const wrap=$("#compareWrap");wrap.hidden=false;wrap.innerHTML="";
-  list.slice(0,2).forEach(item=>{
-    const col=document.createElement("div");col.className="col";
-    col.textContent=item.title+" — "+item.style+"\n\n"+(item.styled||item.raw);
-    wrap.appendChild(col);
-  });
+  list.slice(0,2).forEach(item=>{const col=document.createElement("div");col.className="col";col.textContent=item.title+" — "+item.style+"\n\n"+(item.styled||item.raw);wrap.appendChild(col);});
 }
 function botSay(text,mine){
   const log=$("#botLog");if(!log)return;
@@ -115,11 +111,24 @@ function askBot(q){
   const prompt=q||($("#botIn")&&$("#botIn").value)||"";
   if(!prompt.trim())return;
   botSay(prompt,true);
-  const ctx={key:state.styled&&state.styled.meta&&state.styled.meta.key};
+  if(!state.parsed&&state.raw.trim())state.parsed=parseSongText(state.raw);
+  const ctx={key:state.styled&&state.styled.meta&&state.styled.meta.key,parsed:state.parsed,raw:state.raw};
   const res=theoryReply(prompt,ctx);
   botSay(res.say,false);
   if(res.style){state.style=res.style;renderStyleButtons();}
-  if(res.chart)loadChartText(res.chart);
+  if(res.density!=null){state.density=res.density;renderDensity();}
+  if(res.applyToSong&&res.parsed){
+    state.parsed=res.parsed;
+    restyle();
+    if(state.styled){
+      state.raw=toChordPro(state.styled);
+      const box=$("#src");if(box)box.value=state.raw;
+    }
+  }else if(res.chart){
+    loadChartText(res.chart);
+  }else if(res.style||res.density!=null){
+    if(state.raw.trim())restyle();
+  }
   if($("#botIn"))$("#botIn").value="";
 }
 function takeIncomingChart(){
@@ -147,8 +156,8 @@ function wire(){
   $("#botGo").onclick=()=>askBot();
   $("#botIn").addEventListener("keydown",e=>{if(e.key==="Enter")askBot();});
   const chips=$("#botChips");
-  [["ii-V-I in F","ii-V-I in F"],["Bossa in G","bossa in G"],["Blues in A","12-bar blues in A"],["Gospel turnaround in C","gospel turnaround in C"],["Neo-soul in Eb","neo-soul in Eb"]].forEach(([label,q])=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>askBot(q);chips.appendChild(b);});
-  botSay("Ask for a form and a key. I build piano progressions and load them as a chart.",false);
+  [["This song in Em, light jazz","give me this song in Em, light jazz style"],["This song in F bossa","this song in F, bossa style"],["This song gospel medium","this song in gospel style, medium"],["ii-V-I in Bb","ii-V-I in Bb"]].forEach(([label,q])=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>askBot(q);chips.appendChild(b);});
+  botSay("Load a song, then type: this song in Em, light jazz style. I transpose the chart and color the chords.",false);
   const drop=$("#drop"),file=$("#file");
   drop.onclick=()=>file.click();
   file.onchange=()=>handleFiles(file.files);
