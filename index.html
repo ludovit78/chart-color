@@ -9,7 +9,7 @@
   <title>Chart Color</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=10" />
+  <link rel="stylesheet" href="styles.css?v=11" />
 </head>
 <body>
   <div class="app">
@@ -108,22 +108,19 @@
   </div>
   <div id="pianoSheet" class="piano-sheet" hidden>
     <div class="piano-head">
-      <div>
-        <h3 id="pianoName">Chord</h3>
-        <p id="pianoHint">One octave — red keys are the notes</p>
-      </div>
+      <h3 id="pianoName">Chord on Piano</h3>
       <button class="btn ghost" id="pianoClose" type="button">Close</button>
     </div>
+    <p id="pianoHint" hidden></p>
     <div id="pianoKb"></div>
-    <div class="chips" id="pianoTabs"></div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
-  <script src="harmony.js?v=10"></script>
-  <script src="parser.js?v=10"></script>
-  <script src="theory.js?v=10"></script>
-  <script src="piano.js?v=10"></script>
-  <script src="app.js?v=10"></script>
-  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=10");</script>
+  <script src="harmony.js?v=11"></script>
+  <script src="parser.js?v=11"></script>
+  <script src="theory.js?v=11"></script>
+  <script src="piano.js?v=11"></script>
+  <script src="app.js?v=11"></script>
+  <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js?v=11");</script>
 </body>
 </html>
