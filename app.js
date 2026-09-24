@@ -107,6 +107,7 @@ function botSay(text,mine){
   p.textContent=(mine?"You: ":"Bot: ")+text;
   log.appendChild(p);log.scrollTop=log.scrollHeight;
 }
+function clearBotLog(){const log=$("#botLog");if(log)log.innerHTML="";}
 function askBot(q){
   const prompt=q||($("#botIn")&&$("#botIn").value)||"";
   if(!prompt.trim())return;
@@ -154,6 +155,7 @@ function wire(){
   $("#dlTxt").onclick=()=>{if(!state.styled)parseCurrent();if(state.styled)downloadText(slug(currentTitle())+"-chart.txt",toAlignedChart(state.styled));};
   $("#printBtn").onclick=()=>window.print();
   $("#botGo").onclick=()=>askBot();
+  const clearBot=$("#clearBot");if(clearBot)clearBot.onclick=clearBotLog;
   $("#botIn").addEventListener("keydown",e=>{if(e.key==="Enter")askBot();});
   const chips=$("#botChips");
   [["This song in Em, light jazz","give me this song in Em, light jazz style"],["This song in F bossa","this song in F, bossa style"],["This song gospel medium","this song in gospel style, medium"],["ii-V-I in Bb","ii-V-I in Bb"]].forEach(([label,q])=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;b.onclick=()=>askBot(q);chips.appendChild(b);});
